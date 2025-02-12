@@ -1,5 +1,6 @@
 import TodoTask from "@/components/todo-task";
 import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 import {
   Button,
   FlatList,
@@ -23,6 +24,7 @@ const tasks = [
 ];
 
 export default function Index() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <FlatList
@@ -32,7 +34,10 @@ export default function Index() {
         )}
         ListEmptyComponent={<Text>No tasks found</Text>}
       />
-      <TouchableOpacity style={styles.fab} onPress={() => alert("FAB Pressed")}>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.push("/new-task")}
+      >
         <Ionicons name="add" size={24} color="white" />
       </TouchableOpacity>
     </View>
