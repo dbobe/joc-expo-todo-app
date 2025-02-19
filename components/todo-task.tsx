@@ -2,14 +2,18 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
-
+import { deleteTask, Task } from "@/database/operations";
+import { useSQLiteContext } from "expo-sqlite";
+import { router } from "expo-router";
 interface TodoTaskProps {
-  title: string;
-  dueDate: string;
+  task: Task;
+  onDelete: () => void;
 }
 
-export default function TodoTask({ title, dueDate }: TodoTaskProps) {
+export default function TodoTask({ task, onDelete }: TodoTaskProps) {
+  const db = useSQLiteContext();
   const [isChecked, setIsChecked] = useState(false);
+
   return (
     <View style={styles.container}>
       <Checkbox
@@ -18,16 +22,27 @@ export default function TodoTask({ title, dueDate }: TodoTaskProps) {
         color={isChecked ? "#4630EB" : undefined}
       />
       <View>
-        <Text style={[styles.title, isChecked && styles.checked]}>{title}</Text>
+        <Text style={[styles.title, isChecked && styles.checked]}>
+          {task.title}
+        </Text>
         <Text style={[styles.dueDate, isChecked && styles.checked]}>
-          {dueDate}
+          Due Date:{new Date(task.dueDate).toLocaleDateString()}
         </Text>
       </View>
       <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.button}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => router.push(`/edit-task?id=${task.id}`)}
+        >
           <Ionicons name="pencil" size={16} color="black" />
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.button, styles.deleteButton]}>
+        <TouchableOpacity
+          style={[styles.button, styles.deleteButton]}
+          onPress={() => {
+            deleteTask(db, task.id!);
+            onDelete();
+          }}
+        >
           <Ionicons name="trash" size={16} color="white" />
         </TouchableOpacity>
       </View>

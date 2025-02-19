@@ -1,6 +1,9 @@
 import TodoTask from "@/components/todo-task";
+import { getAllTasks, Task } from "@/database/operations";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useSQLiteContext } from "expo-sqlite";
+import { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
@@ -24,13 +27,24 @@ const tasks = [
 ];
 
 export default function Index() {
+  const db = useSQLiteContext();
+  const [tasks, setTasks] = useState<Task[]>([]);
   const router = useRouter();
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    const tasks = await getAllTasks(db);
+    setTasks(tasks);
+  };
   return (
     <View style={styles.container}>
       <FlatList
         data={tasks}
         renderItem={({ item }) => (
-          <TodoTask title={item.title} dueDate={item.dueDate} />
+          <TodoTask task={item} onDelete={fetchTasks} />
         )}
         ListEmptyComponent={<Text>No tasks found</Text>}
       />

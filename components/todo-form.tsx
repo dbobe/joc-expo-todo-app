@@ -9,11 +9,22 @@ import {
 } from "react-native";
 import React, { useState } from "react";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { addTask, Task, updateTask } from "@/database/operations";
+import { useSQLiteContext } from "expo-sqlite";
+import { router } from "expo-router";
 
-export default function TodoForm() {
-  const [title, setTitle] = useState("");
-  const [dueDate, setDueDate] = useState<Date>(new Date());
+interface TodoFormProps {
+  task?: Task;
+}
+
+export default function TodoForm({ task }: TodoFormProps) {
+  const [title, setTitle] = useState(task?.title || "");
+  const [dueDate, setDueDate] = useState<Date>(
+    task?.dueDate ? new Date(task.dueDate) : new Date()
+  );
   const [showDatePicker, setShowDatePicker] = useState(false);
+
+  const db = useSQLiteContext();
 
   const handleDateChange = (event: any, selectedDate?: Date) => {
     setShowDatePicker(Platform.OS === "ios");
@@ -22,9 +33,33 @@ export default function TodoForm() {
     }
   };
 
+  const handleSubmit = () => {
+    if (title.trim()) {
+      const newTask: Task = {
+        title: title.trim(),
+        dueDate: dueDate,
+        completed: false,
+      };
+
+      if (task && task.id) {
+        updateTask(db, task.id, newTask);
+      } else {
+        addTask(db, newTask);
+      }
+      setTitle("");
+      setDueDate(new Date());
+      router.push("/");
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <TextInput placeholder="Add a new task" style={styles.input} />
+      <TextInput
+        placeholder="Add a new task"
+        style={styles.input}
+        value={title}
+        onChangeText={setTitle}
+      />
       {/* <TextInput placeholder="Set a due date" style={styles.input} /> */}
       {Platform.OS === "ios" ? (
         <DateTimePicker
@@ -50,7 +85,10 @@ export default function TodoForm() {
         </>
       )}
       {/* <DateTimePicker value={dueDate} onChange={handleDateChange} /> */}
-      <Button title="Add Task" />
+      <Button
+        title={task ? "Update Task" : "Add Task"}
+        onPress={handleSubmit}
+      />
     </View>
   );
 }
