@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import {
   Button,
   FlatList,
+  SectionList,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -39,14 +40,38 @@ export default function Index() {
     const tasks = await getAllTasks(db);
     setTasks(tasks);
   };
+
+  const sections = [
+    {
+      title: "Pending Tasks",
+      data: tasks.filter((task) => !task.completed),
+    },
+    {
+      title: "Completed Tasks",
+      data: tasks.filter((task) => task.completed),
+    },
+  ];
+
   return (
     <View style={styles.container}>
-      <FlatList
+      {/* <FlatList
         data={tasks}
         renderItem={({ item }) => (
           <TodoTask task={item} onDelete={fetchTasks} />
         )}
         ListEmptyComponent={<Text>No tasks found</Text>}
+      /> */}
+      <SectionList
+        sections={sections}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TodoTask task={item} onDelete={fetchTasks} />
+        )}
+        renderSectionHeader={({ section: { title } }) => (
+          <View className="bg-gray-100 px-4 py-2">
+            <Text className="text-lg font-bold">{title}</Text>
+          </View>
+        )}
       />
       <TouchableOpacity
         style={styles.fab}

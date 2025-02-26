@@ -26,7 +26,9 @@ export const createDbIfNeeded = async (db: SQLiteDatabase) => {
 
 export async function getAllTasks(db: SQLiteDatabase): Promise<Task[]> {
   try {
-    const response = await db.getAllAsync<Task>("SELECT * FROM tasks");
+    const response = await db.getAllAsync<Task>(
+      "SELECT * FROM tasks ORDER BY completed ASC, date(dueDate) ASC"
+    );
     return response;
   } catch (error) {
     console.error("Error getting all tasks", error);

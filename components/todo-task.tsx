@@ -2,7 +2,7 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import React, { useState } from "react";
 import Checkbox from "expo-checkbox";
 import { Ionicons } from "@expo/vector-icons";
-import { deleteTask, Task } from "@/database/operations";
+import { deleteTask, Task, updateTask } from "@/database/operations";
 import { useSQLiteContext } from "expo-sqlite";
 import { router } from "expo-router";
 interface TodoTaskProps {
@@ -12,14 +12,22 @@ interface TodoTaskProps {
 
 export default function TodoTask({ task, onDelete }: TodoTaskProps) {
   const db = useSQLiteContext();
-  const [isChecked, setIsChecked] = useState(false);
+  const [isChecked, setIsChecked] = useState(task.completed || false);
 
   return (
     <View style={styles.container}>
       <Checkbox
         value={isChecked}
-        onValueChange={setIsChecked}
         color={isChecked ? "#4630EB" : undefined}
+        onValueChange={(newValue) => {
+          setIsChecked(newValue);
+          updateTask(db, task.id!, {
+            ...task,
+            completed: newValue,
+            dueDate: new Date(task.dueDate),
+          });
+          onDelete();
+        }}
       />
       <View>
         <Text style={[styles.title, isChecked && styles.checked]}>
